@@ -1,53 +1,29 @@
-const apiUrl = "https://media.mw.metropolia.fi/wbma/media";
+import {useEffect, useState} from 'react';
+import {apiUrl, appId} from '../utils/app-config';
+import {doFetch} from '../utils/functions';
+import {error} from '@babel/eslint-parser/lib/convert/index.cjs';
 
-const useMedia = () => {
+const useMedia = (update) => {
   const [mediaArray, setMediaArray] = useState([]);
-
-  useEffect(() => {
-    loadMedia();
-  }, []);
+  const [loading, setLoading] = useState(false);
 
   const loadMedia = async () => {
     try {
-      const response = await fetch(url);
-      const json = await response.json();
 
-      const allData = await Promise.all(
-        array.map(async (item) => {
-          const response = await fetch(url + item.id);
-          const json = await response.json();
-          return json;
-        })
-      );
+                 // ALL MEDIA FILES
+      //const json = await doFetch(apiUrl + 'media');
 
-      setMediaArray(allData);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+                 // FIles with specific id:
+      const json = await doFetch(apiUrl + 'tags/' + appId);
 
-  return {mediaArray};
-};
-
-export { useMedia };
-import { useState, useEffect } from "react";
-import { apiUrl } from "../utils/app-config";
-import { doFetch } from "../utils/functions";
-
-const useMedia = () => {
-  const [mediaArray, setMediaArray] = useState([]);
-
-  const loadMedia = async () => {
-    try {
-      const json = await doFetch(apiUrl + 'media');
-      //console.log(json)
       const mediaFiles = await Promise.all(
         json.map(async (item) => {
           const fileData = await doFetch(apiUrl + 'media/' + item.file_id);
-          //console.log('filedata', fileData);
+          // console.log('fileData', fileData);
           return fileData;
         }),
       );
+      // console.log(data);
       setMediaArray(mediaFiles);
     } catch (error) {
       console.error('loadMedia failed', error);
@@ -56,9 +32,112 @@ const useMedia = () => {
 
   useEffect(() => {
     loadMedia();
-  }, []);
+  }, [update]);
 
-  return { mediaArray };
+  const postMedia = async (mediaData, token) => {
+    setLoading(true);
+    try {
+    const options = {
+      method: 'POST',
+      headers: {
+        'x-access-token': token,
+      },
+      body: mediaData,
+    };
+
+    const uploadResult = await doFetch(apiUrl + 'media', options);
+    return uploadResult;
+  } catch(error){
+    throw new Error('postMedia failed' + error.message);
+  } finally {
+    setLoading(false);
+  }
+
+  };
+
+  return {mediaArray, postMedia, loading};
 };
 
-export { useMedia };
+const useAuthentication = () => {
+  const postLogin = async (user) => {
+    return await doFetch(apiUrl + 'login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(user),
+    });
+  };
+
+  return {postLogin};
+};
+
+const useUser = () => {
+  const getUserByToken = async (token) => {
+    const options = {
+      method: 'GET',
+      headers: {'x-access-token': token},
+    };
+    return await doFetch(apiUrl + 'users/user', options);
+  };
+
+  const postUser = async (userData) => {
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    };
+    return await doFetch(apiUrl + 'users', options);
+  };
+
+  const putUser = async (userData, token) => {
+    const options = {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-access-token': token,
+      },
+      body: JSON.stringify(userData),
+    };
+    return await doFetch(apiUrl + 'users', options);
+  };
+
+  const checkUsername = async (username) => {
+    try {
+      const response = await doFetch(`${apiUrl}users/username/${username}`);
+      return response.available;
+    } catch {
+      throw new Error('checkusername Error', error.message);
+    }
+  };
+
+  return {getUserByToken, postUser, checkUsername, putUser};
+};
+
+const useTag = () => {
+
+  const postTag = async (tag, token) => {
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-access-token': token,
+      },
+      body: JSON.stringify(tag),
+    };
+    return await doFetch(apiUrl + 'tags', options);
+  };
+
+  const getFilesByTag = async (tag) => {
+    try {
+      return await doFetch(apiUrl + 'tags/' + tag);
+    } catch (error) {
+      throw new Error('getFilesByTag error', error.message);
+    }
+  };
+  return {postTag, getFilesByTag};
+};
+
+export {useMedia, useAuthentication, useUser, useTag};
