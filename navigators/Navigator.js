@@ -29,12 +29,17 @@ const TabScreen = () => {
 };
 
 const StackScreen = () => {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="Single" component={Single} />
-    </Stack.Navigator>
-  );
-};
+    const [isLoggedIn] = useContext(MainContext);
+    return (
+      <Stack.Navigator>
+        // TODO: if isLoggedIn is true add Tabs and Single      
+            <Stack.Screen name="Tabs" component={TabScreen}/>
+            <Stack.Screen name="Single" component={Single}/>          
+        // TODO: else add Login
+            <Stack.Screen name="Login" component={Login}/>          
+      </Stack.Navigator>
+    );
+  };
 
 const Navigator = () => {
   return (

@@ -1,12 +1,16 @@
-import { StatusBar } from "expo-status-bar";
-import { Navigator } from "./navigators/Navigator";
+import { StatusBar } from 'expo-status-bar';
+import Navigator from './navigators/Navigator';
+import { MainProvider } from './contexts/MainContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const App = () => {
   return (
-    <>
-      <Navigator></Navigator>
-      <StatusBar style="auto" />
-    </>
+    <SafeAreaProvider>
+      <MainProvider>
+        <Navigator />
+        <StatusBar style="auto" />
+      </MainProvider>
+    </SafeAreaProvider>
   );
 };
 
