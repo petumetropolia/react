@@ -1,29 +1,22 @@
-import {StatusBar} from 'expo-status-bar';
-import {FlatList, StyleSheet, Text, SafeAreaView, TouchableOpacity, Image} from 'react-native';
+import { StatusBar } from "expo-status-bar";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  SafeAreaView,
+  TouchableOpacity,
+  Image,
+} from "react-native";
+import { useMedia } from "../hooks/ApiHooks";
 
 const List = () => {
-  const [mediaArray, setMediaArray] = useState([]);
-  const url = 'https://raw.githubusercontent.com/mattpe/wbma/master/docs/assets/test.json';
+  const {mediaArray} = useMedia();
 
-  useEffect(() => {
-    loadMedia();
-  }, []);
-
-  const loadMedia = async () => {
-    try {
-      const response = await fetch(url);
-      const json = await response.json();
-      console.log(json);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-    return (
-      <FlatList
-        data={mediaArray}
-        keyExtractor={x => x.title}
-        renderItem={({item}) => <ListItem singleMedia={item} />}
-      />
-    );
-  };
+  return (
+    <FlatList
+      data={mediaArray}
+      keyExtractor={(x) => x.title}
+      renderItem={({ item }) => <ListItem singleMedia={item} />}
+    />
+  );
+};
